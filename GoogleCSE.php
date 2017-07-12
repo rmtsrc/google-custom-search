@@ -3,14 +3,14 @@
 Plugin Name: Google Custom Search Plugin
 Plugin URI: http://aleembawany.com/projects/wordpress/google-custom-search-plugin/
 Description: Integrate Google Custom Search into WordPress
-Version: 1.2
+Version: 1.3
 Author: Aleem Bawany
 Author URI: http://aleembawany.com/about/aleem-bawany/
 */
 
 class GoogleCSE
 {
-	private static $version = '1.0';
+	private static $version = '1.3';
 	private static $pluginurl = 'http://aleembawany.com/projects/wordpress/google-search-plugin/';
 
 	protected static $google_search_box;
@@ -20,13 +20,13 @@ class GoogleCSE
 	protected static $google_search_show_sidebar;
 
 	protected static $search_url;
-	
+
 	public static function run()
 	{
 		add_filter('get_search_form', array('GoogleCSE', 'get_form'));
 		add_action('template_redirect', array('GoogleCSE', 'template_redirect'), 1);
 		add_action('admin_menu', array('GoogleCSE', 'admin_config_page'));
-		
+
 		// setup user options
 		self::$search_url = get_option('home') . '/search/';
 		self::$google_search_box = stripslashes(get_option('cse-search-box-code'));
@@ -36,19 +36,20 @@ class GoogleCSE
 		self::$google_search_show_sidebar = get_option('cse-search-show-sidebar');
 
 		// setup google search form for wordpress
-		self::$google_search_box = preg_replace('/size="31"/is', 'id="s" value="'.$_GET['q'].'" ', self::$google_search_box);
+      $q = isset($_GET['q']) ? $_GET['q'] : '';
+		self::$google_search_box = preg_replace('/size="31"/is', 'id="s" value="'.$q.'" ', self::$google_search_box);
 		self::$google_search_box = preg_replace('/cse-search-box/is', 'searchform', self::$google_search_box);
 		self::$google_search_box = preg_replace('/action="([^"]*)"/s', 'action="'.self::$search_url.'"', self::$google_search_box);
 	}
-	
+
 	public static function admin_config_page()
 	{
 		add_options_page(__('Google&nbsp;Search'), __('Google&nbsp;Search'), 'manage_options', 'google-search-config', Array('GoogleCSE', 'google_search_conf') );
 	}
-	
+
 	public static function google_search_conf()
 	{
-		if (isset($_POST['submit'])):
+		if (isset($_POST['submit']) || isset($_POST['submit2'])):
 			$box_code = $_POST['cse-search-box-code'];
 			$results_code = $_POST['cse-search-results-code'];
 			$results_width = $_POST['cse-search-results-width'];
@@ -87,15 +88,15 @@ class GoogleCSE
 
 				<h3>Paste code for CSE Search Box:</h3>
 				<textarea style="font-size:11px;font-family:'Courier New'" name="cse-search-box-code" rows="14" cols="120"><?php
-					echo htmlentities(stripslashes(get_option('cse-search-box-code')));
+					echo htmlspecialchars(stripslashes(get_option('cse-search-box-code')));
 				?></textarea>
 
 				<h3>Paste Code for CSE Search Results:</h3>
 				<textarea style="font-size:11px;font-family:'Courier New'" name="cse-search-results-code" rows="14" cols="120"><?php
-					echo htmlentities(stripslashes(get_option('cse-search-results-code')));
+					echo htmlspecialchars(stripslashes(get_option('cse-search-results-code')));
 				?></textarea>
 
-			
+
 				<p>
 					<a class="button" href="<?php echo self::$search_url ?>" target="search-preview">Preview</a>
 					<input type="submit" name="submit" value="<?php echo __('Save Changes') ?>" class="button-primary" />
@@ -104,8 +105,8 @@ class GoogleCSE
 		</div>
 		<?php
 	}
-	
-	
+
+
 	public static function template_redirect()
 	{
 		// not a search page; don't do anything and return
@@ -113,7 +114,7 @@ class GoogleCSE
 		{
 			return;
 		}
-		
+
 		add_action('wp_title', array('GoogleCSE', 'get_title'));
 		add_action('wp_head', Array('GoogleCSE', 'search_css'));
 
@@ -125,7 +126,7 @@ class GoogleCSE
 		}
 		else
 		{
-			echo '<div id="content" class="narrowcolumn">';
+			echo '<div id="content">';
 		}
 		echo self::$google_search_box;
 		echo self::$google_search_results;
@@ -139,7 +140,7 @@ class GoogleCSE
 		get_footer();
 		exit;
 	}
-	
+
 	public static function get_title()
 	{
 		// if(is_404())
@@ -151,25 +152,25 @@ class GoogleCSE
 			return $_GET['q'].' -';
 		}
 	}
-	
+
 	public static function search_css()
 	{
 		echo '<style type="text/css">';
 		echo '#cse-search-results iframe { width:'.self::$google_search_results_width.'; margin:'.self::$google_search_results_margin.'; }';
 		echo '</style>';
 	}
-	
-	
-	
+
+
+
 	public static function get_form($form)
 	{
 		if ($form == '') return;
-		
+
 		$form = preg_replace('/type="submit"/', 'type="submit" id="searchsubmit"', self::$google_search_box);
 
 		return $form;
 	}
-	
+
 }
 
 GoogleCSE::run();

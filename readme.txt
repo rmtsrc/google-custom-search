@@ -3,8 +3,8 @@ Contributors: Aleem Bawany
 Donate link: http://aleembawany.com/projects/wordpress/google-custom-search-plugin/
 Tags: search, google, custom
 Requires at least: 2.7
-Tested up to: 2.7
-Stable tag: 1.2
+Tested up to: 3.0.1
+Stable tag: 1.3
 
 Google Custom Search plugin for Wordpress replaces the default search engine with Google's Custom Search for websites.
 
